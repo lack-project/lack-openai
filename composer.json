@@ -14,7 +14,7 @@
     "require": {
         "php": ">=8.1",
         "openai-php/client": "^0.6",
-        "php-http/guzzle7-adapter": "^2.0"
+        "php-http/guzzle7-adapter": "^1"
     },
 
     "require-dev": {
