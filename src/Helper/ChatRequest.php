@@ -46,7 +46,10 @@ class ChatRequest
     }
 
     public function addResponse(OpenAiStreamResponse $streamResponse) {
-        $this->request["messages"][] = $streamResponse->responseFull;
+        $response = $streamResponse->responseFull;
+        if ($response["function_call"]["name"] === "")
+            unset($response["function_call"]);
+        $this->request["messages"][] = $response;
     }
 
     public function addFunctionResult(string $name, mixed $result) {

@@ -91,7 +91,14 @@ class LackOpenAiClient
 
         // Call OpenAI API
         $this->logger->logServerRequest($this->chatRequest->request);
-        $stream = $api->chat()->createStreamed($this->chatRequest->request);
+
+        try {
+
+            $stream = $api->chat()->createStreamed($this->chatRequest->request);
+        } catch (\Exception $e) {
+            print_r ($this->chatRequest->request);
+            throw $e;
+        }
 
 
         // Evaluate the Stream Response

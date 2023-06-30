@@ -39,7 +39,7 @@ class OpenAiStreamResponse
     }
 
     public function getFunctionArguments() : array {
-        return json_decode($this->responseFull["function_call"]["arguments"], true) ?? [];
+        return json_decode($this->responseFull["function_call"]["arguments"] , true) ?? [];
     }
 
     public function getFunctionName() : string {
