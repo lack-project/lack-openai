@@ -39,7 +39,7 @@ class LackOpenAiClient
      * @return void
      * @throws \ReflectionException
      */
-    public function addFunction (string $name, \Closure|callable $callback) {
+    public function addFunction ( \Closure|callable $callback) {
         if (is_array($callback))
             $reflection = new \ReflectionMethod($callback[0], $callback[1]);
         else
@@ -48,7 +48,7 @@ class LackOpenAiClient
         $definition  = (new FunctionDefinitionGenerator())->getFunctionDefinition($reflection);
         $this->chatRequest->addFunctionDefinition($definition);
 
-        $this->functions[$name] = [
+        $this->functions[$definition["name"]] = [
             "callback" => $callback,
         ];
     }
@@ -59,7 +59,7 @@ class LackOpenAiClient
         foreach ($reflection->getMethods() as $method) {
             $attr = get_attribute(AiFunction::class, $method);
             if ($attr === null) continue;
-            $this->addFunction($attr->name, [$object, $method->getName()]);
+            $this->addFunction([$object, $method->getName()]);
         }
     }
 
