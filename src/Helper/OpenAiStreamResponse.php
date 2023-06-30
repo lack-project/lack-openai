@@ -31,7 +31,7 @@ class OpenAiStreamResponse
             }
             $this->responseFull[$key] = $value;
         }
-        echo $delta["content"] ?? "";
+
     }
 
     public function isFunctionCall() {

@@ -13,6 +13,6 @@ interface LackOpenAiLogger
 
     public function logServerResponse(array $response) : void;
 
-
+    public function logStreamOutput(string $chars) : void;
 
 }

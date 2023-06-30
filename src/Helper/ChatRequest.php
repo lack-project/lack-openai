@@ -14,6 +14,18 @@ class ChatRequest
 
 
     public function __construct(string $systemMessage = null) {
+        $this->reset($systemMessage);
+    }
+
+    /**
+     * Reset the message history and start new session
+     *
+     *
+     * @param string|null $systemMessage
+     * @return void
+     */
+    public function reset(string $systemMessage = null) {
+        $this->request["messages"] = [];
         if ($systemMessage) {
             $this->request["messages"][] = [
                 'content' => $systemMessage,

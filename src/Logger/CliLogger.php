@@ -13,8 +13,8 @@ class CliLogger implements LackOpenAiLogger
         $this->logFunction = $logFunction;
         $this->logServer = $logServer;
     }
-    
-    
+
+
     public function logFunctionCall(string $name, array $arguments): void
     {
         if (! $this->logFunction)
@@ -45,5 +45,11 @@ class CliLogger implements LackOpenAiLogger
             return;
         echo "\n";
         echo "< Server response: " . json_encode($response) ."\n";
+    }
+
+
+    public function logStreamOutput(string $chars): void
+    {
+        echo $chars;
     }
 }

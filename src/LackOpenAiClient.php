@@ -29,6 +29,19 @@ class LackOpenAiClient
         return trim($this->apiKey);
     }
 
+    /**
+     * Reset the Message history and start new chat session
+     *
+     * Provide a inital optional system message as parameter
+     *
+     * @param string|null $systemContent
+     * @return void
+     */
+    public function reset(string $systemContent = null) {
+        $this->chatRequest->reset($systemContent);
+    }
+
+
     public $functions = [];
 
 
@@ -86,7 +99,7 @@ class LackOpenAiClient
         foreach ($stream as $streamChunk) {
             $delta = $streamChunk->choices[0]->delta->toArray();
             $response->addData($delta);
-            echo $delta["content"] ?? "";
+            $this->logger->logStreamOutput($delta["content"] ?? "");
 
         }
         $this->logger->logServerResponse($response->responseFull);
