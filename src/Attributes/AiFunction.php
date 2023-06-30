@@ -2,6 +2,7 @@
 
 namespace Lack\OpenAi\Attributes;
 
+#[\Attribute(\Attribute::TARGET_METHOD | \Attribute::TARGET_FUNCTION)]
 class AiFunction
 {
 

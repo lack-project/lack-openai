@@ -2,6 +2,8 @@
 
 namespace Lack\OpenAi\Attributes;
 
+#[\Attribute(\Attribute::TARGET_PARAMETER)]
+
 class AiParam
 {
         public function __construct(
