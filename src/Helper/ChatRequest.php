@@ -1,0 +1,48 @@
+<?php
+
+namespace Lack\OpenAi\Helper;
+
+class ChatRequest
+{
+
+    public $request = [
+        "model" => "gpt-3.5-turbo-16k",
+        "messages" => [],
+        "functions" => [],
+    ];
+
+
+
+    public function __construct(string $systemMessage = null) {
+        if ($systemMessage) {
+            $this->request["messages"][] = [
+                'content' => $systemMessage,
+                'role' => 'system',
+            ];
+        }
+    }
+
+    public function addFunctionDefinition(array $functionDefinition) {
+        $this->request["functions"][] = $functionDefinition;
+    }
+
+    public function addUserContent(string $content) {
+        $this->request["messages"][] = [
+            'content' => $content,
+            'role' => 'user',
+        ];
+    }
+
+    public function addResponse(OpenAiStreamResponse $streamResponse) {
+        $this->request["messages"][] = $streamResponse->responseFull;
+    }
+
+    public function addFunctionResult(string $name, mixed $result) {
+        $this->request["messages"][] = [
+            'content' => json_encode($result),
+            'role' => 'function',
+            'name' => $name,
+        ];
+    }
+
+}

@@ -1,0 +1,4 @@
+.idea
+composer.lock
+demo/openai-key.txt
+vendor/

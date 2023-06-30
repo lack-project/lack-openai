@@ -1,0 +1,38 @@
+{
+    "name": "lack/openai",
+    "type": "project",
+    "description": "OpenAI Api",
+    "keywords": [],
+    "homepage": "https://infracamp.org",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Matthias Leuffen",
+            "email": "matthes@leuffen.de"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "openai-php/client": "^0.6",
+        "php-http/guzzle7-adapter": "^2.0"
+    },
+
+    "require-dev": {
+        "phore/tester": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lack\\OpenAi\\": "src"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "minimum-stability": "dev",
+    "config": {
+        "preferred-install": "source",
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
+    }
+}
