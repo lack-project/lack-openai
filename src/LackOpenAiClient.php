@@ -131,4 +131,25 @@ class LackOpenAiClient
         return $response->responseFull["content"];
     }
 
+    /**
+     * Interactive chat with user
+     *
+     * @return void
+     */
+    public function interactive(string $question = null) {
+        if ($question !== null)
+            $this->textComplete($question, streamOutput: true);
+        while (true) {
+            $input = trim(readline("Your input: "));
+            if ($input === "") {
+                echo "\nExit - Goodbye\n";
+                return;
+            }
+
+
+            $this->textComplete($question, streamOutput: true);
+            echo "\nEoR;\n";
+        }
+    }
+
 }

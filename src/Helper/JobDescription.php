@@ -8,11 +8,11 @@ class JobDescription
     private string $rules = "";
 
     public function addContext(string $context) {
-        $this->data .= "\n" . 'Context (extract data from it): """' . "\n" . $context . "\n" .  '"""' . "\n";
+        $this->data .= "\n" . '<CONTEXT>' . "\n" . $context . "\n" .  '</CONTEXT>' . "\n";
     }
 
     public function addInput(string $input) {
-         $this->data .=  "\n" . 'Input: """' . "\n" . $input . "\n" .  '"""' . "\n";
+         $this->data .=  "\n" . '<INPUT>' . "\n" . $input . "\n" .  '</INPUT>' . "\n";
     }
 
     public function addRule(string $rule) {
