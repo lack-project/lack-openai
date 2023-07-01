@@ -78,6 +78,34 @@ class LackOpenAiClient
 
 
 
+    private function runFucntion(string $functionName, array $functionArguments) : mixed {
+        $function = $this->functions[$functionName]["callback"];
+        if ($function === null) {
+            throw new \InvalidArgumentException("Undefined function '$functionName'");
+        }
+
+
+        if (is_array($function)) {
+            $fnRef = new \ReflectionMethod($function[0], $function[1]);
+        } else {
+            $fnRef = new \ReflectionFunction($function);
+        }
+
+        $args = [];
+        foreach ($fnRef->getParameters() as $param) {
+            if (isset ($functionArguments[$param->getName()])) {
+                $args[] = $functionArguments[$param->getName()];
+            } else {
+                if ($param->isOptional()) {
+                    $args[] = $param->getDefaultValue();
+                } else {
+                    throw new \InvalidArgumentException("Missing required parameter '{$param->getName()}");
+                }
+            }
+        }
+        return $function(...$args);
+
+    }
 
 
 
@@ -118,12 +146,16 @@ class LackOpenAiClient
             $functionName = $response->getFunctionName();
             $functionArguments = $response->getFunctionArguments();
 
-            $function = $this->functions[$functionName]["callback"];
             $this->logger->logFunctionCall($functionName, $functionArguments);
-            $return = $function(...$functionArguments);
-            $this->logger->logFunctionResult($functionName, $return);
+            try {
+                $return = $this->runFucntion($functionName, $functionArguments);
+                $this->logger->logFunctionResult($functionName, $return);
+                $this->chatRequest->addFunctionResult($functionName, $return);
+            } catch (\InvalidArgumentException $e) {
+                $this->logger->logFunctionResult($functionName, "Error: " . $e->getMessage());
+                $this->chatRequest->addFunctionResult($functionName, "Error: ". $e->getMessage());
+            }
 
-            $this->chatRequest->addFunctionResult($functionName, $return);
             $this->textComplete(null, $streamOutput);
         }
 

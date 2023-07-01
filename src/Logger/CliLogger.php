@@ -25,6 +25,7 @@ class CliLogger implements LackOpenAiLogger
     {
         if (! $this->logFunction)
             return;
+        echo "\n";
         echo  self::COLOR_BLUE . "\e[1m> Function call: $name (" . self::COLOR_RESET . substr(json_encode($arguments), 0, 40) . self::FONT_BOLD . self::COLOR_BLUE . ")" . self::COLOR_RESET;
         echo "\n";
     }
