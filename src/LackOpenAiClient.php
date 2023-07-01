@@ -79,7 +79,7 @@ class LackOpenAiClient
 
 
     private function runFucntion(string $functionName, array $functionArguments) : mixed {
-        $function = $this->functions[$functionName]["callback"];
+        $function = $this->functions[$functionName]["callback"] ?? null;
         if ($function === null) {
             throw new \InvalidArgumentException("Undefined function '$functionName'");
         }
