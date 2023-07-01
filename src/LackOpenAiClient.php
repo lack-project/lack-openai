@@ -153,7 +153,7 @@ class LackOpenAiClient
                 $this->chatRequest->addFunctionResult($functionName, $return);
             } catch (\InvalidArgumentException $e) {
                 $this->logger->logFunctionResult($functionName, "Error: " . $e->getMessage());
-                $this->chatRequest->addFunctionResult($functionName, "Error: ". $e->getMessage());
+                $this->chatRequest->addFunctionResult($functionName, "Error: ". $e->getMessage(). ". Please append the missing parameter and try again.");
             }
 
             $this->textComplete(null, $streamOutput);

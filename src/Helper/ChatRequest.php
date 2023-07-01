@@ -7,8 +7,7 @@ class ChatRequest
 
     public $request = [
         "model" => "gpt-3.5-turbo-16k",
-        "messages" => [],
-        "functions" => [],
+        "messages" => []
     ];
 
 
@@ -35,6 +34,8 @@ class ChatRequest
     }
 
     public function addFunctionDefinition(array $functionDefinition) {
+        if ( ! isset ($this->request["functions"]))
+            $this->request["functions"] = [];
         $this->request["functions"][] = $functionDefinition;
     }
 
