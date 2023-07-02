@@ -153,7 +153,7 @@ class LackOpenAiClient
                 $this->chatRequest->addFunctionResult($functionName, $return);
             } catch (\InvalidArgumentException $e) {
                 $this->logger->logFunctionResult($functionName, "Error: " . $e->getMessage());
-                $this->chatRequest->addFunctionResult($functionName, "Error: ". $e->getMessage(). ". Please append the missing parameter and try again.");
+                $this->chatRequest->addFunctionResult($functionName, "Error: ". $e->getMessage(). ". Please append the missing parameter and try again. " . uniqid());
             }
 
             $this->textComplete(null, $streamOutput);
@@ -172,6 +172,7 @@ class LackOpenAiClient
         if ($question !== null)
             $this->textComplete($question, streamOutput: true);
         while (true) {
+            echo "\n";
             $input = trim(readline("Your input: "));
             if ($input === "") {
                 echo "\nExit - Goodbye\n";
@@ -179,8 +180,8 @@ class LackOpenAiClient
             }
 
 
-            $this->textComplete($question, streamOutput: true);
-            echo "\nEoR;\n";
+            $this->textComplete($input, streamOutput: true);
+            echo "\n---end--;\n";
         }
     }
 
