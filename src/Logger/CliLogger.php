@@ -9,7 +9,7 @@ class CliLogger implements LackOpenAiLogger
     private const COLOR_GREEN = "\033[32m";
     private const COLOR_CYAN = "\033[36m";
     private const COLOR_PURPLE = "\033[35m";
-    private const COLOR_GRAY = "\033[30m";
+    private const COLOR_GRAY = "\033[37m";
     private const COLOR_RESET = "\033[0m";
 
     private $logFunction = true;
@@ -56,6 +56,7 @@ class CliLogger implements LackOpenAiLogger
 
     public function logStreamOutput(string $chars): void
     {
+        $chars = str_replace("\n", "\n" . self::COLOR_GRAY . "[stream] ", $chars);
         echo self::COLOR_GRAY . $chars . self::COLOR_RESET;
     }
 
