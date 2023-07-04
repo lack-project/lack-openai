@@ -109,7 +109,7 @@ class LackOpenAiClient
 
 
 
-    public function textComplete($question=null, bool $streamOutput = false) : string
+    public function textComplete($question=null, bool $streamOutput = false) : LackOpenAiResponse
     {
         $api = \OpenAI::client($this->getApiKey());
 
@@ -160,7 +160,7 @@ class LackOpenAiClient
         }
 
 
-        return $response->responseFull["content"];
+        return new LackOpenAiResponse($response->responseFull["content"]);
     }
 
     /**
