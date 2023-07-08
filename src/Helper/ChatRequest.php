@@ -6,7 +6,7 @@ class ChatRequest
 {
 
     public $request = [
-        "model" => "gpt-3.5-turbo-16k",
+        "model" => "gpt-4",
         "messages" => []
     ];
 
@@ -39,11 +39,15 @@ class ChatRequest
         $this->request["functions"][] = $functionDefinition;
     }
 
-    public function addUserContent(string $content) {
-        $this->request["messages"][] = [
-            'content' => $content,
-            'role' => 'user',
-        ];
+    public function addUserContent(string|array $content) {
+        if ( ! is_array($content))
+            $content = [$content];
+        foreach ($content as $c) {
+            $this->request["messages"][] = [
+                'content' => $c,
+                'role' => 'user',
+            ];
+        }
     }
 
     public function addResponse(OpenAiStreamResponse $streamResponse) {

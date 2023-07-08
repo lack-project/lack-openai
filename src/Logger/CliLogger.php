@@ -60,4 +60,9 @@ class CliLogger implements LackOpenAiLogger
         echo self::COLOR_GRAY . $chars . self::COLOR_RESET;
     }
 
+    public function logCacheHit(string $key = ""): void
+    {
+        echo self::COLOR_GRAY . "[cache] " . self::COLOR_RESET . "Cache hit for key $key";
+        echo "\n";
+    }
 }

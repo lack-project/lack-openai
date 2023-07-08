@@ -3,6 +3,7 @@
 namespace Lack\OpenAi;
 
 use Lack\OpenAi\Attributes\AiFunction;
+use Lack\OpenAi\Cache\RequestCacheInterface;
 use Lack\OpenAi\Helper\ChatHistory;
 use Lack\OpenAi\Helper\ChatRequest;
 use Lack\OpenAi\Helper\FunctionDefinitionGenerator;
@@ -18,9 +19,13 @@ class LackOpenAiClient
 
     public function __construct(
         private string $apiKey,
-        private LackOpenAiLogger|null $logger = null
+        private LackOpenAiLogger|null $logger = null,
+        private RequestCacheInterface|null $requestCache = null
     ) {
         $this->chatRequest = new ChatRequest();
+        if ($this->requestCache === null)
+            $this->requestCache = new Cache\FileRequestCache();
+        
         if ($this->logger === null)
             $this->logger = new CliLogger();
     }
@@ -109,9 +114,17 @@ class LackOpenAiClient
 
 
 
-    public function textComplete($question=null, bool $streamOutput = false) : LackOpenAiResponse
+    public function textComplete(string|array|null $question=null, bool $streamOutput = false) : LackOpenAiResponse
     {
         $api = \OpenAI::client($this->getApiKey());
+
+        $cacheKey = json_encode([$this->chatRequest->request, $question]);
+        $cachedResult = $this->requestCache->get($cacheKey);
+        if ($cachedResult !== null) {
+            $this->logger->logCacheHit();
+            $response = new LackOpenAiResponse($cachedResult);
+            return $response;
+        }
 
         if ($question) {
             $this->chatRequest->addUserContent($question);
@@ -159,7 +172,7 @@ class LackOpenAiClient
             $this->textComplete(null, $streamOutput);
         }
 
-
+        $this->requestCache->set($cacheKey, $response->responseFull["content"]);
         return new LackOpenAiResponse($response->responseFull["content"]);
     }
 
