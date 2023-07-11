@@ -23,11 +23,11 @@ class LackOpenAiResponse
         // Remove trailing """ and ending """ from response
         $text = preg_replace("/^\"\"\"/", "", $text);
         $text = preg_replace("/\"\"\"$/", "", $text);
-        
+
         // remove trailing ```json and ending ```
-        $text = preg_replace("/^```json/", "", $text);
+        $text = preg_replace("/^```[a-z]*/", "", $text);
         $text = preg_replace("/```$/", "", $text);
-        
+
         return $text;
     }
 
