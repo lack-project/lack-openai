@@ -25,7 +25,7 @@ class LackOpenAiClient
         $this->chatRequest = new ChatRequest();
         if ($this->requestCache === null)
             $this->requestCache = new Cache\FileRequestCache();
-        
+
         if ($this->logger === null)
             $this->logger = new CliLogger();
     }
@@ -114,7 +114,7 @@ class LackOpenAiClient
 
 
 
-    public function textComplete(string|array|null $question=null, bool $streamOutput = false) : LackOpenAiResponse
+    public function textComplete(string|array|null $question=null, bool $streamOutput = false, callable $streamer = null) : LackOpenAiResponse
     {
         $api = \OpenAI::client($this->getApiKey());
 
@@ -123,6 +123,9 @@ class LackOpenAiClient
         if ($cachedResult !== null) {
             $this->logger->logCacheHit();
             $response = new LackOpenAiResponse($cachedResult);
+            if ($streamer !== null) {
+                $streamer(new LackOpenAiResponse($response->responseFull["content"]));
+            }
             return $response;
         }
 
@@ -144,10 +147,18 @@ class LackOpenAiClient
 
         // Evaluate the Stream Response
         $response = new OpenAiStreamResponse();
+        $lastFlush = 0;
         foreach ($stream as $streamChunk) {
             $delta = $streamChunk->choices[0]->delta->toArray();
             $response->addData($delta);
             $this->logger->logStreamOutput($delta["content"] ?? "");
+
+            if ($streamer !== null) {
+                if (strlen($response->responseFull["content"]) > $lastFlush + 250) {
+                    $lastFlush = strlen($response->responseFull["content"]);
+                    $streamer(new LackOpenAiResponse($response->responseFull["content"]));
+                }
+            }
 
         }
         $this->logger->logServerResponse($response->responseFull);
@@ -173,6 +184,9 @@ class LackOpenAiClient
         }
 
         $this->requestCache->set($cacheKey, $response->responseFull["content"]);
+        if ($streamer !== null) {
+            $streamer(new LackOpenAiResponse($response->responseFull["content"]));
+        }
         return new LackOpenAiResponse($response->responseFull["content"]);
     }
 
@@ -191,6 +205,7 @@ class LackOpenAiClient
                 echo "\nExit - Goodbye\n";
                 return;
             }
+
 
 
             $this->textComplete($input, streamOutput: true);
