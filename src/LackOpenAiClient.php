@@ -3,6 +3,7 @@
 namespace Lack\OpenAi;
 
 use Lack\OpenAi\Attributes\AiFunction;
+use Lack\OpenAi\Cache\FileRequestCache;
 use Lack\OpenAi\Cache\RequestCacheInterface;
 use Lack\OpenAi\Helper\ChatHistory;
 use Lack\OpenAi\Helper\ChatRequest;
@@ -44,6 +45,10 @@ class LackOpenAiClient
      */
     public function reset(string $systemContent = null) {
         $this->chatRequest->reset($systemContent);
+    }
+    
+    public function getCache() : FileRequestCache {
+        return $this->requestCache;
     }
 
 
@@ -119,12 +124,13 @@ class LackOpenAiClient
         $api = \OpenAI::client($this->getApiKey());
 
         $cacheKey = json_encode([$this->chatRequest->request, $question]);
+       
         $cachedResult = $this->requestCache->get($cacheKey);
         if ($cachedResult !== null) {
             $this->logger->logCacheHit();
             $response = new LackOpenAiResponse($cachedResult);
             if ($streamer !== null) {
-                $streamer(new LackOpenAiResponse($response->responseFull["content"]));
+                $streamer(new LackOpenAiResponse($cachedResult));
             }
             return $response;
         }

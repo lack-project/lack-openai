@@ -24,6 +24,10 @@ class FileRequestCache implements RequestCacheInterface
             $this->cacheFile->set_json($data);
         }
         
+        public function clear() {
+            $this->cacheFile->set_json(["init"=>true]);
+        }
+        
         public function get(string $key) : string|null {
             $data = $this->cacheFile->get_json();
             if ( ! isset ($data[$key]))
