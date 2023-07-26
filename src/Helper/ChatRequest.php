@@ -7,6 +7,7 @@ class ChatRequest
 
     public $request = [
         "model" => "gpt-4",
+        "temperature" => 0.1,
         "messages" => []
     ];
 

@@ -174,6 +174,9 @@ class LackOpenAiClient
 
         if ($response->isFunctionCall()) {
             $functionName = $response->getFunctionName();
+            // if functionName starts with functions. or function. - remove it
+            if (str_starts_with($functionName, "functions."))
+                $functionName = substr($functionName, strlen("functions."));
             $functionArguments = $response->getFunctionArguments();
 
             $this->logger->logFunctionCall($functionName, $functionArguments);
@@ -194,6 +197,11 @@ class LackOpenAiClient
             $streamer(new LackOpenAiResponse($response->responseFull["content"]));
         }
         return new LackOpenAiResponse($response->responseFull["content"]);
+    }
+    
+    
+    public function dump() {
+        print_r($this->chatRequest->request);
     }
 
     /**
