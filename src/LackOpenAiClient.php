@@ -43,10 +43,10 @@ class LackOpenAiClient
      * @param string|null $systemContent
      * @return void
      */
-    public function reset(string $systemContent = null) {
-        $this->chatRequest->reset($systemContent);
+    public function reset(string $systemContent = null, float $temperature = 0.1) {
+        $this->chatRequest->reset($systemContent, $temperature);
     }
-    
+
     public function getCache() : FileRequestCache {
         return $this->requestCache;
     }
@@ -124,7 +124,7 @@ class LackOpenAiClient
         $api = \OpenAI::client($this->getApiKey());
 
         $cacheKey = json_encode([$this->chatRequest->request, $question]);
-       
+
         $cachedResult = $this->requestCache->get($cacheKey);
         if ($cachedResult !== null) {
             $this->logger->logCacheHit();
@@ -198,8 +198,8 @@ class LackOpenAiClient
         }
         return new LackOpenAiResponse($response->responseFull["content"]);
     }
-    
-    
+
+
     public function dump() {
         print_r($this->chatRequest->request);
     }

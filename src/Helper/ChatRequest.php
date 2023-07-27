@@ -24,7 +24,8 @@ class ChatRequest
      * @param string|null $systemMessage
      * @return void
      */
-    public function reset(string $systemMessage = null) {
+    public function reset(string $systemMessage = null, float $temperature = 0.1) {
+        $this->request["temperature"] = $temperature;
         $this->request["messages"] = [];
         if ($systemMessage) {
             $this->request["messages"][] = [
