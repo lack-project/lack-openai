@@ -28,6 +28,10 @@ class LackOpenAiResponse
         $text = preg_replace("/^```[a-z]*/", "", $text);
         $text = preg_replace("/```$/", "", $text);
 
+        // remove trailing " and ending "
+        $text = preg_replace("/^\"/m", "", $text);
+        $text = preg_replace("/\"$/mi", "", $text);
+        
         return $text;
     }
 
