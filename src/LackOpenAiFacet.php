@@ -5,9 +5,7 @@ namespace Lack\OpenAi;
 use Lack\OpenAi\Helper\JobTemplate;
 use Lack\OpenAi\Helper\JsonSchemaGenerator;
 
-/**
- * @template T
- */
+
 class LackOpenAiFacet
 {
 
@@ -70,12 +68,13 @@ class LackOpenAiFacet
     /**
      * Format unsectured input text into a valid data struct
      *
+     * @template T
      * @param string $inputData
      * @param class-string<T> $className
      * @return T
      * @throws \Exception
      */
-    public function promptDataStruct(string $inputData, string $className) {
+    public function promptDataStruct(string $inputData, string $className) : mixed {
         return $this->promptData(__DIR__ . "/tpl/prompt-data-struct.txt", [
             "input" => $inputData
         ], $className);

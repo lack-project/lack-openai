@@ -21,7 +21,7 @@ class LackOpenAiResponse
     public function getTextCleaned() : string {
         $text = trim ($this->response);
         // Remove trailing """ and ending """ from response
-        $text = preg_replace("/^\"\"\"/", "", $text);
+        $text = preg_replace("/^\"\"\"\n/", "", $text);
         $text = preg_replace("/\"\"\"$/", "", $text);
 
         // remove trailing ```json and ending ```
