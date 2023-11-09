@@ -5,6 +5,9 @@ namespace Lack\OpenAi;
 use Lack\OpenAi\Helper\JobTemplate;
 use Lack\OpenAi\Helper\JsonSchemaGenerator;
 
+/**
+ * @template T
+ */
 class LackOpenAiFacet
 {
 
@@ -35,7 +38,7 @@ class LackOpenAiFacet
         $tpl = new JobTemplate($templateFile);
         $tpl->setData($data);
 
-        
+
 
         if ($cast === null) {
             // Return string Text
@@ -43,9 +46,9 @@ class LackOpenAiFacet
             $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: false);
             return $result->getTextCleaned();
         }
-        
+
         $jsg = new JsonSchemaGenerator();
-        
+
         phore_out($jsg->convertToJsonSchema($cast));
         $system = "You must output parsable json data as defined in the json-schema: `" . $jsg->convertToJsonSchema($cast) . "`! Evaluate and follow the json-schama descriptions on how to format data. No aditonal text is allowed!";
         $this->client->reset($system . "\n\n" . $tpl->getSystemContent());
@@ -58,7 +61,7 @@ class LackOpenAiFacet
         $tpl->setData($data);
 
         $this->client->reset($tpl->getSystemContent());
-        
+
         $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: true,  streamer: function(LackOpenAiResponse $data) use ($targetFile) {
             phore_file($targetFile)->set_contents($data->getTextCleaned());
         });
@@ -66,17 +69,16 @@ class LackOpenAiFacet
 
     /**
      * Format unsectured input text into a valid data struct
-     * 
-     * @template T
+     *
      * @param string $inputData
-     * @param class-string<T> $class
+     * @param class-string<T> $className
      * @return T
      * @throws \Exception
      */
-    public function promtDataSruct(string $inputData, string $class) {
+    public function promptDataStruct(string $inputData, string $className) {
         return $this->promptData(__DIR__ . "/tpl/prompt-data-struct.txt", [
             "input" => $inputData
-        ], $class);
+        ], $className);
     }
 
 }
