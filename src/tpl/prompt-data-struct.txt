@@ -1,0 +1,8 @@
+---
+
+Generate the output based on the input below. Set undefined values to null or empty string.
+
+Input:
+"""
+{{input}}
+"""

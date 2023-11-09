@@ -20,6 +20,8 @@ class JobTemplate
     {
         $this->templateFileName = $filename;
         $this->templateParts = explode ("\n---\n", phore_file($filename)->assertFile()->get_contents());
+        if (count($this->templateParts) < 2)
+            array_unshift($this->templateParts, ""); // Empty system Message
     }
 
     public function setData(array $data)  {
