@@ -32,7 +32,7 @@ class LackOpenAiFacet
      * @return mixed|T
      * @throws \Exception
      */
-    public function promptData(string $templateFile, array $data, string $cast = null) : mixed {
+    public function promptData(string $templateFile, array $data, string $cast = null, bool $dump = false) : mixed {
         $tpl = new JobTemplate($templateFile);
         $tpl->setData($data);
 
@@ -49,11 +49,15 @@ class LackOpenAiFacet
 
         $system = "You must output parsable json data as defined in the json-schema: `" . $jsg->convertToJsonSchema($cast) . "`! Evaluate and follow the json-schama descriptions on how to format data. No aditonal text is allowed!";
         $this->client->reset($system . "\n\n" . $tpl->getSystemContent());
-        $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: false);
+        $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: false, dump: $dump);
         return phore_json_decode($result->getTextCleaned(), $cast);
     }
 
-    public function promptStreamToFile(string $templateFile, array $data, string $targetFile) : void {
+    public function dump() {
+        $this->client->dump();
+    }
+
+    public function promptStreamToFile(string $templateFile, array $data, string $targetFile, bool $dump = false) : void {
         $tpl = new JobTemplate($templateFile);
         $tpl->setData($data);
 
@@ -61,7 +65,7 @@ class LackOpenAiFacet
 
         $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: true,  streamer: function(LackOpenAiResponse $data) use ($targetFile) {
             phore_file($targetFile)->set_contents($data->getTextCleaned());
-        });
+        }, dump: $dump);
     }
 
     /**
@@ -73,10 +77,10 @@ class LackOpenAiFacet
      * @return T
      * @throws \Exception
      */
-    public function promptDataStruct(string $inputData, string $className) : mixed {
+    public function promptDataStruct(string $inputData, string $className, bool $dump = false) : mixed {
         return $this->promptData(__DIR__ . "/tpl/prompt-data-struct.txt", [
             "input" => $inputData
-        ], $className);
+        ], $className, dump: $dump);
     }
 
 }

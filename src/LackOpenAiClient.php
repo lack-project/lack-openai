@@ -119,7 +119,7 @@ class LackOpenAiClient
 
 
 
-    public function textComplete(string|array|null $question=null, bool $streamOutput = false, callable $streamer = null) : LackOpenAiResponse
+    public function textComplete(string|array|null $question=null, bool $streamOutput = false, callable $streamer = null, bool $dump = false) : LackOpenAiResponse
     {
         $api = \OpenAI::client($this->getApiKey());
 
@@ -142,6 +142,9 @@ class LackOpenAiClient
         // Call OpenAI API
         $this->logger->logServerRequest($this->chatRequest->request);
 
+        if ($dump) {
+            print_r($this->chatRequest->request);
+        }
         try {
 
             $stream = $api->chat()->createStreamed($this->chatRequest->request);
