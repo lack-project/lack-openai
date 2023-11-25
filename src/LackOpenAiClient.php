@@ -43,8 +43,8 @@ class LackOpenAiClient
      * @param string|null $systemContent
      * @return void
      */
-    public function reset(string $systemContent = null, float $temperature = 0.1) {
-        $this->chatRequest->reset($systemContent, $temperature);
+    public function reset(string $systemContent = null, float $temperature = 0.1, string $model = "gpt-4") {
+        $this->chatRequest->reset($systemContent, $temperature, $model );
     }
 
     public function getCache() : FileRequestCache {

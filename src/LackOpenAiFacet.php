@@ -14,7 +14,7 @@ class LackOpenAiFacet
     }
 
 
-    public $model = "gpc-4";
+    public $model = "gpt-4-1106-preview";
 
     public function setModel(string $model) : self {
         $this->model = $model;
@@ -40,7 +40,7 @@ class LackOpenAiFacet
 
         if ($cast === null) {
             // Return string Text
-            $this->client->reset($tpl->getSystemContent());
+            $this->client->reset($tpl->getSystemContent(), 0.1, $this->model);
             $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: false);
             return $result->getTextCleaned();
         }
@@ -57,7 +57,7 @@ class LackOpenAiFacet
         $tpl = new JobTemplate($templateFile);
         $tpl->setData($data);
 
-        $this->client->reset($tpl->getSystemContent());
+        $this->client->reset($tpl->getSystemContent(), 0.1, $this->model);
 
         $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: true,  streamer: function(LackOpenAiResponse $data) use ($targetFile) {
             phore_file($targetFile)->set_contents($data->getTextCleaned());
