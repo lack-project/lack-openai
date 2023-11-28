@@ -31,8 +31,8 @@ class LackOpenAiResponse
         // remove trailing " and ending "
         $text = preg_replace("/^\"/", "", $text);
         $text = preg_replace("/\"$/i", "", $text);
-        
-        return $text;
+
+        return trim($text);
     }
 
     /**
