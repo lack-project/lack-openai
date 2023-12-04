@@ -22,30 +22,62 @@ class JsonSchemaGenerator
             $type = $matches[2] ?? 'string'; // Default to string if no type is defined
             $description = $this->extractDescription($docComment);
 
-            $schema['properties'][$property->getName()] = $this->parseType($type, $description);
+            $schema['properties'][$property->getName()] = $this->parseType($type, $description, $reflectionClass->getNamespaceName());
         }
 
         return json_encode($schema, JSON_PRETTY_PRINT);
     }
 
-    private function parseType(string $type, string $description = ''): array
+    private function parseType(string $type, string $description = '', string $namespace = ''): array
     {
         $schema = ['description' => $description];
 
         if (str_contains($type, '[]')) {
             $schema['type'] = 'array';
             $itemType = str_replace('[]', '', $type);
-            $schema['items'] = $this->parseType($itemType);
+            $schema['items'] = $this->parseType($itemType, '', $namespace);
         } elseif (str_contains($type, '|')) {
             $types = explode('|', $type);
-            $schema['oneOf'] = array_map(fn($t) => $this->parseType($t), $types);
-        } elseif (class_exists($type)) {
-            $schema = $this->convertToJsonSchema($type);
+            $schema['oneOf'] = array_map(fn($t) => $this->parseType($t, '', $namespace), $types);
         } else {
-            $schema['type'] = $type;
+            $fullType = $this->getFullQualifiedClassName($type, $namespace);
+            if (class_exists($fullType)) {
+                $schema = json_decode($this->convertToJsonSchema($fullType), true);
+            } else {
+                $schema['type'] = $this->mapPhpTypeToJsonType($type);
+            }
         }
 
         return $schema;
+    }
+
+    private function getFullQualifiedClassName(string $type, string $namespace): string
+    {
+        if (class_exists($type)) {
+            return $type;
+        }
+
+        $fullType = $namespace . '\\' . $type;
+        if (class_exists($fullType)) {
+            return $fullType;
+        }
+
+        return $type;
+    }
+
+    private function mapPhpTypeToJsonType(string $phpType): string
+    {
+        $typeMappings = [
+            'int' => 'integer',
+            'bool' => 'boolean',
+            'float' => 'number',
+            'string' => 'string',
+            'array' => 'array',
+            'object' => 'object',
+            'null' => 'null',
+        ];
+
+        return $typeMappings[$phpType] ?? 'string'; // Default to string if no mapping is found
     }
 
     private function extractDescription(string $docComment): string
