@@ -36,6 +36,15 @@ class LackOpenAiClient
     }
 
     /**
+     * Load the Facet with nice helper functions
+     * 
+     * @return LackOpenAiFacet
+     */
+    public function getFacet() : LackOpenAiFacet {
+        return new LackOpenAiFacet($this);
+    }
+    
+    /**
      * Reset the Message history and start new chat session
      *
      * Provide a inital optional system message as parameter
