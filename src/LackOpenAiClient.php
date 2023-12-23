@@ -37,13 +37,13 @@ class LackOpenAiClient
 
     /**
      * Load the Facet with nice helper functions
-     * 
+     *
      * @return LackOpenAiFacet
      */
     public function getFacet() : LackOpenAiFacet {
         return new LackOpenAiFacet($this);
     }
-    
+
     /**
      * Reset the Message history and start new chat session
      *
@@ -172,7 +172,7 @@ class LackOpenAiClient
             $this->logger->logStreamOutput($delta["content"] ?? "");
 
             if ($streamer !== null) {
-                if (strlen($response->responseFull["content"]) > $lastFlush + 250) {
+                if (strlen($response->responseFull["content"]) > $lastFlush + 550) {
                     $lastFlush = strlen($response->responseFull["content"]);
                     $streamer(new LackOpenAiResponse($response->responseFull["content"]));
                 }

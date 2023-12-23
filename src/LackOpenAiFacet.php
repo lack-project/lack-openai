@@ -57,15 +57,18 @@ class LackOpenAiFacet
         $this->client->dump();
     }
 
-    public function promptStreamToFile(string $templateFile, array $data, string $targetFile, bool $dump = false) : void {
+    public function promptStreamToFile(string $templateFile, array $data, string $targetFile, bool $dump = false, bool $noAppend=false) : void {
         $tpl = new JobTemplate($templateFile);
         $tpl->setData($data);
 
         $this->client->reset($tpl->getSystemContent(), 0.1, $this->model);
 
         $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: true,  streamer: function(LackOpenAiResponse $data) use ($targetFile) {
-            phore_file($targetFile)->set_contents($data->getTextCleaned());
+            if ( ! $noAppend)
+                phore_file($targetFile)->set_contents($data->getTextCleaned());
         }, dump: $dump);
+        if ($noAppend)
+            phore_file($targetFile)->set_contents($result->getTextCleaned());
     }
 
     /**
