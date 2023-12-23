@@ -63,11 +63,11 @@ class LackOpenAiFacet
 
         $this->client->reset($tpl->getSystemContent(), 0.1, $this->model);
 
-        $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: true,  streamer: function(LackOpenAiResponse $data) use ($targetFile) {
-            if ( ! $noAppend)
+        $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: true,  streamer: function(LackOpenAiResponse $data) use ($targetFile, $noAppend) {
+            if ($noAppend === false)
                 phore_file($targetFile)->set_contents($data->getTextCleaned());
         }, dump: $dump);
-        if ($noAppend)
+        if ($noAppend === true)
             phore_file($targetFile)->set_contents($result->getTextCleaned());
     }
 
