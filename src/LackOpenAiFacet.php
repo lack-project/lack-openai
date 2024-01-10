@@ -47,7 +47,7 @@ class LackOpenAiFacet
 
         $jsg = new JsonSchemaGenerator();
 
-        $system = "You must output parsable json data as defined in the json-schema: `" . $jsg->convertToJsonSchema($cast) . "`! Evaluate and follow the json-schama descriptions on how to format data. No aditonal text is allowed!";
+        $system = "You must output parsable json data as defined in the json-schema: `" . $jsg->convertToJsonSchema($cast) . "`! Evaluate and follow the json-schema descriptions on how to format data. No additional text is allowed!";
         $this->client->reset($system . "\n\n" . $tpl->getSystemContent(), 0.1, $this->model);
         $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: false, dump: $dump);
         return phore_json_decode($result->getTextCleaned(), $cast);
