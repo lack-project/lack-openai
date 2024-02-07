@@ -25,7 +25,7 @@ class LackOpenAiClient
     ) {
         $this->chatRequest = new ChatRequest();
         if ($this->requestCache === null)
-            $this->requestCache = new Cache\FileRequestCache();
+            $this->requestCache = new Cache\NoCache();
 
         if ($this->logger === null)
             $this->logger = new CliLogger();
