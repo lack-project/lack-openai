@@ -56,7 +56,7 @@ class LackOpenAiClient
         $this->chatRequest->reset($systemContent, $temperature, $model );
     }
 
-    public function getCache() : FileRequestCache {
+    public function getCache() : RequestCacheInterface {
         return $this->requestCache;
     }
 
