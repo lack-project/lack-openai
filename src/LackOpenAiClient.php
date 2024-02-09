@@ -126,6 +126,10 @@ class LackOpenAiClient
 
     }
 
+    
+    public function getChatRequest() : ChatRequest {
+        return $this->chatRequest;
+    }
 
 
     public function textComplete(string|array|null $question=null, bool $streamOutput = false, callable $streamer = null, bool $dump = false) : LackOpenAiResponse

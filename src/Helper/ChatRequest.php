@@ -35,6 +35,10 @@ class ChatRequest
             ];
         }
     }
+    
+    public function setMaxTokens(int $maxTokens) {
+        $this->request["max_tokens"] = $maxTokens;
+    }
 
     public function addFunctionDefinition(array $functionDefinition) {
         if ( ! isset ($this->request["functions"]))
@@ -52,6 +56,26 @@ class ChatRequest
             ];
         }
     }
+    
+    
+    public function addImageContent(string $text, string $imageUrl) {
+        $this->request["messages"][] = [
+            'content' => [
+                [
+                    "type" => "text",
+                    "text" => $text
+                ],
+                [
+                    "type" => "image_url",
+                    "image_url" => [
+                        "url" => $imageUrl
+                    ]
+                ]
+            ],
+            'role' => 'user',
+        ];
+    }
+  
 
     public function addResponse(OpenAiStreamResponse $streamResponse) {
         $response = $streamResponse->responseFull;

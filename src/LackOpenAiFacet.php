@@ -57,6 +57,22 @@ class LackOpenAiFacet
         $this->client->dump();
     }
 
+    public function promptImage(string $templateFile, array $data, string $imageData, string $imageType="png", bool $dump = false) : string {
+        $tpl = new JobTemplate($templateFile);
+        $tpl->setData($data);
+
+        
+        $this->client->reset($tpl->getSystemContent(), 0.1, "gpt-4-vision-preview");
+
+        $this->client->getChatRequest()->setMaxTokens(4000);
+        $this->client->getChatRequest()->addImageContent($tpl->getUserContent(), "data:image/$imageType;base64,". base64_encode($imageData));
+        
+        $result = $this->client->textComplete(null, streamOutput: false, dump: $dump);
+        return $result->getTextCleaned();
+    }
+ 
+    
+    
     public function promptStreamToFile(string $templateFile, array $data, string $targetFile, bool $dump = false, bool $noAppend=false) : void {
         $tpl = new JobTemplate($templateFile);
         $tpl->setData($data);
