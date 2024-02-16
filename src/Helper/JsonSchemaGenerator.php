@@ -17,7 +17,7 @@ class JsonSchemaGenerator
         foreach ($properties as $property) {
             $docComment = $property->getDocComment();
             
-            preg_match('/@(type|var)\s+([^\s]+)/', $docComment, $matches);
+            preg_match('/@(type|var)\s+([^\s]+(\s*\,\s*[^\s]+)?)/', $docComment, $matches);
            
             $type = $matches[2] ?? 'string'; // Default to string if no type is defined
             $description = $this->extractDescription($docComment);
@@ -39,7 +39,7 @@ class JsonSchemaGenerator
         } elseif (str_contains($type, '|')) {
             $types = explode('|', $type);
             $schema['oneOf'] = array_map(fn($t) => $this->parseType($t, '', $namespace), $types);
-        } elseif (preg_match('/array<([a-zA-Z0-9_\\\\]+),\s*([a-zA-Z0-9_\\\\]+)>/', $type, $matches)) {
+        } elseif (preg_match('/array<([a-zA-Z0-9_\\\\]+)\s*,\s*([a-zA-Z0-9_\\\\]+)>/', $type, $matches)) {
             $schema['type'] = 'object';
             $schema['additionalProperties'] = $this->parseType($matches[2], '', $namespace);
         } else {
