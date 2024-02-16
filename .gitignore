@@ -2,3 +2,4 @@
 composer.lock
 demo/openai-key.txt
 vendor/
+.keystore.yml

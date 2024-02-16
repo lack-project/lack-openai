@@ -1,0 +1,9 @@
+version: '1.0'
+coder:
+    # Replace Example Dir wit relative path e.g. ./examples/ to benefit from brixcoder code completion
+    include:
+        - ./src/
+    exclude:
+        - .keystore.yml
+        - ./vendor/
+        - ./node_modules

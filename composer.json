@@ -16,10 +16,12 @@
         "ext-readline": "*",
         "openai-php/client": "^0.6",
         "php-http/guzzle7-adapter": "^1"
+
     },
 
     "require-dev": {
-        "phore/tester": "*"
+        "phore/tester": "*",
+        "brixlab/coder": "dev-main"
     },
     "autoload": {
         "psr-4": {

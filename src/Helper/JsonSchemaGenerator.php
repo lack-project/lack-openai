@@ -39,6 +39,9 @@ class JsonSchemaGenerator
         } elseif (str_contains($type, '|')) {
             $types = explode('|', $type);
             $schema['oneOf'] = array_map(fn($t) => $this->parseType($t, '', $namespace), $types);
+        } elseif (preg_match('/array<([a-zA-Z0-9_\\\\]+),\s*([a-zA-Z0-9_\\\\]+)>/', $type, $matches)) {
+            $schema['type'] = 'object';
+            $schema['additionalProperties'] = $this->parseType($matches[2], '', $namespace);
         } else {
             $fullType = $this->getFullQualifiedClassName($type, $namespace);
             if (class_exists($fullType)) {
