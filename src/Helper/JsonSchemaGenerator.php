@@ -17,9 +17,11 @@ class JsonSchemaGenerator
         foreach ($properties as $property) {
             $docComment = $property->getDocComment();
             
-            preg_match('/@(type|var)\s+([^\s]+(\s*\,\s*[^\s]+)?)/', $docComment, $matches);
+            preg_match('/@(type|var)\s+(.*)/', $docComment, $matches);
            
+            
             $type = $matches[2] ?? 'string'; // Default to string if no type is defined
+            $type = trim ($type);
             $description = $this->extractDescription($docComment);
 
             $schema['properties'][$property->getName()] = $this->parseType($type, $description, $reflectionClass->getNamespaceName());
