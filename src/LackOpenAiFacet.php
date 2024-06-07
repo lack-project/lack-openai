@@ -14,7 +14,7 @@ class LackOpenAiFacet
     }
 
 
-    public $model = "gpt-4-turbo";
+    public $model = "gpt-4o";
 
     public function setModel(string $model) : self {
         $this->model = $model;
