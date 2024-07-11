@@ -35,7 +35,7 @@ class ChatRequest
             ];
         }
     }
-    
+
     public function setMaxTokens(int $maxTokens) {
         $this->request["max_tokens"] = $maxTokens;
     }
@@ -56,8 +56,8 @@ class ChatRequest
             ];
         }
     }
-    
-    
+
+
     public function addImageContent(string $text, string $imageUrl) {
         $this->request["messages"][] = [
             'content' => [
@@ -75,7 +75,13 @@ class ChatRequest
             'role' => 'user',
         ];
     }
-  
+
+    public function setJson(bool $json) {
+        if ($json)
+            $this->request["response_format"] = ["type" => "json_object"];
+        else
+            unset ($this->request["response_format"]);
+    }
 
     public function addResponse(OpenAiStreamResponse $streamResponse) {
         $response = $streamResponse->responseFull;

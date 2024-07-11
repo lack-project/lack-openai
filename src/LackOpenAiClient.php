@@ -126,13 +126,13 @@ class LackOpenAiClient
 
     }
 
-    
+
     public function getChatRequest() : ChatRequest {
         return $this->chatRequest;
     }
 
 
-    public function textComplete(string|array|null $question=null, bool $streamOutput = false, callable $streamer = null, bool $dump = false) : LackOpenAiResponse
+    public function textComplete(string|array|null $question=null, bool $streamOutput = false, callable $streamer = null, bool $dump = false, bool $json = false) : LackOpenAiResponse
     {
         $api = \OpenAI::client($this->getApiKey());
 
@@ -151,6 +151,7 @@ class LackOpenAiClient
         if ($question) {
             $this->chatRequest->addUserContent($question);
         }
+        $this->chatRequest->setJson($json);
 
         // Call OpenAI API
         $this->logger->logServerRequest($this->chatRequest->request);
