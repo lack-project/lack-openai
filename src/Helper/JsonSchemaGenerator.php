@@ -16,10 +16,10 @@ class JsonSchemaGenerator
 
         foreach ($properties as $property) {
             $docComment = $property->getDocComment();
-            
+
             preg_match('/@(type|var)\s+(.*)/', $docComment, $matches);
-           
-            
+
+
             $type = $matches[2] ?? 'string'; // Default to string if no type is defined
             $type = trim ($type);
             $description = $this->extractDescription($docComment);
@@ -49,6 +49,7 @@ class JsonSchemaGenerator
             if (class_exists($fullType)) {
                 $schema = json_decode($this->convertToJsonSchema($fullType), true);
             } else {
+
                 $schema['type'] = $this->mapPhpTypeToJsonType($type);
             }
         }
@@ -82,7 +83,7 @@ class JsonSchemaGenerator
             'null' => 'null',
         ];
 
-        return $typeMappings[$phpType] ?? 'string'; // Default to string if no mapping is found
+        return $typeMappings[$phpType] ?? throw new \InvalidArgumentException("Unrecoginized type '$phpType'. Make sure to use full namespace for Class Types."); // Default to string if no mapping is found
     }
 
     private function extractDescription(string $docComment): string
