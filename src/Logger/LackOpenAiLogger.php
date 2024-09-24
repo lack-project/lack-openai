@@ -16,4 +16,7 @@ interface LackOpenAiLogger
     public function logStreamOutput(string $chars) : void;
 
     public function logCacheHit(string $key = "") : void;
+
+
+    public function logEvent(string $message) : void;
 }

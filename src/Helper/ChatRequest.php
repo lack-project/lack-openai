@@ -57,7 +57,16 @@ class ChatRequest
         }
     }
 
-
+    public function addAssistantContent(string|array $content) {
+        if ( ! is_array($content))
+            $content = [$content];
+        foreach ($content as $c) {
+            $this->request["messages"][] = [
+                'content' => $c,
+                'role' => 'assistant',
+            ];
+        }
+    }
     public function addImageContent(string $text, string $imageUrl) {
         $this->request["messages"][] = [
             'content' => [

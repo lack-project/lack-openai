@@ -132,7 +132,7 @@ class LackOpenAiClient
     }
 
 
-    public function textComplete(string|array|null $question=null, bool $streamOutput = false, callable $streamer = null, bool $dump = false, bool $json = false) : LackOpenAiResponse
+    public function textComplete(string|array|null $question = null, bool $streamOutput = false, callable $streamer = null, bool $dump = false, bool $json = false): LackOpenAiResponse
     {
         $api = \OpenAI::client($this->getApiKey());
 
@@ -143,78 +143,204 @@ class LackOpenAiClient
             $this->logger->logCacheHit();
             $response = new LackOpenAiResponse($cachedResult);
             if ($streamer !== null) {
-                $streamer(new LackOpenAiResponse($cachedResult));
+                $streamer($response);
             }
             return $response;
         }
 
+        //$this->chatRequest->setMaxTokens(500);
         if ($question) {
             $this->chatRequest->addUserContent($question);
         }
         $this->chatRequest->setJson($json);
 
-        // Call OpenAI API
-        $this->logger->logServerRequest($this->chatRequest->request);
+        // Initialize variables for continuation logic
+        $maxRetries = 2; // Maximum number of continuations
+        $retryCount = 0;
+        $completeResponseContent = ''; // To accumulate the assistant's responses
+        $finishReason = null;
+        $isFunctionCall = false;
 
-        if ($dump) {
-            print_r($this->chatRequest->request);
-        }
-        try {
+        do {
+            // Call OpenAI API
+            $this->logger->logServerRequest($this->chatRequest->request);
 
-            $stream = $api->chat()->createStreamed($this->chatRequest->request);
-        } catch (\Exception $e) {
-            print_r ($this->chatRequest->request);
-            throw $e;
-        }
+            if ($dump) {
+                print_r($this->chatRequest->request);
+            }
 
+            try {
+                $stream = $api->chat()->createStreamed($this->chatRequest->request);
+            } catch (\Exception $e) {
+                print_r($this->chatRequest->request);
+                throw $e;
+            }
 
-        // Evaluate the Stream Response
-        $response = new OpenAiStreamResponse();
-        $lastFlush = 0;
-        foreach ($stream as $streamChunk) {
-            $delta = $streamChunk->choices[0]->delta->toArray();
-            $response->addData($delta);
-            $this->logger->logStreamOutput($delta["content"] ?? "");
+            // Evaluate the Stream Response
+            $response = new OpenAiStreamResponse();
+            $lastFlush = 0;
+            $finishReason = null;
 
-            if ($streamer !== null) {
-                if (strlen($response->responseFull["content"]) > $lastFlush + 550) {
-                    $lastFlush = strlen($response->responseFull["content"]);
-                    $streamer(new LackOpenAiResponse($response->responseFull["content"]));
+            foreach ($stream as $streamChunk) {
+                $delta = $streamChunk->choices[0]->delta->toArray();
+                $response->addData($delta);
+                $this->logger->logStreamOutput($delta["content"] ?? "");
+
+                if ($streamer !== null) {
+                    if (strlen($response->responseFull["content"]) > $lastFlush + 550) {
+                        $lastFlush = strlen($response->responseFull["content"]);
+                        $streamer(new LackOpenAiResponse($response->responseFull["content"]));
+                    }
+                }
+
+                // Check if finish_reason is set
+                if (isset($streamChunk->choices[0]->finishReason)) {
+                    $finishReason = $streamChunk->choices[0]->finishReason;
+                    echo "FinishReason $finishReason";
                 }
             }
 
-        }
-        $this->logger->logServerResponse($response->responseFull);
+            $this->logger->logServerResponse($response->responseFull);
 
-        // Add the Response to History
-        $this->chatRequest->addResponse($response);
+            // Append the assistant's content to the complete response
+            $assistantContent = $response->responseFull["content"] ?? '';
+            $completeResponseContent .= $assistantContent;
 
-        if ($response->isFunctionCall()) {
+            // Add the assistant's partial response to the conversation history
+            if ($assistantContent) {
+                $this->chatRequest->addAssistantContent($assistantContent);
+            }
+
+            // Check if the assistant made a function call
+            if ($response->isFunctionCall()) {
+                $isFunctionCall = true;
+                break; // Exit the loop to handle the function call
+            }
+
+            if ($finishReason === 'length') {
+                if ($retryCount > $maxRetries) {
+                    throw new \Exception("Max retries reached");
+                }
+                // Max token limit reached, instruct the assistant to continue
+                $this->logger->logEvent("\nMax token limit reached, requesting continuation. ($retryCount / $maxRetries");
+                $retryCount++;
+
+                // Instruct the assistant to continue
+                $continuationInstruction = "Please continue from exact the character from where you left off (last assistant message). Do not repeat aný characters of the last message.";
+                $this->chatRequest->addUserContent($continuationInstruction);
+            } else {
+                // Response is complete or max retries reached
+                break;
+            }
+
+        } while (true);
+
+        // Handle function call if any
+        if ($isFunctionCall) {
             $functionName = $response->getFunctionName();
-            // if functionName starts with functions. or function. - remove it
-            if (str_starts_with($functionName, "functions."))
+            // Remove "functions." prefix if present
+            if (str_starts_with($functionName, "functions.")) {
                 $functionName = substr($functionName, strlen("functions."));
+            }
             $functionArguments = $response->getFunctionArguments();
 
             $this->logger->logFunctionCall($functionName, $functionArguments);
             try {
-                $return = $this->runFucntion($functionName, $functionArguments);
+                $return = $this->runFunction($functionName, $functionArguments);
                 $this->logger->logFunctionResult($functionName, $return);
                 $this->chatRequest->addFunctionResult($functionName, $return);
             } catch (\InvalidArgumentException $e) {
-                $this->logger->logFunctionResult($functionName, "Error: " . $e->getMessage());
-                $this->chatRequest->addFunctionResult($functionName, "Error: ". $e->getMessage(). ". Please append the missing parameter and try again. " . uniqid());
+                $errorMessage = "Error: " . $e->getMessage() . ". Please append the missing parameter and try again. " . uniqid();
+                $this->logger->logFunctionResult($functionName, $errorMessage);
+                $this->chatRequest->addFunctionResult($functionName, $errorMessage);
             }
 
-            $this->textComplete(null, $streamOutput);
+            // Reset retry count and continue the loop to get the assistant's response after the function call
+            $retryCount = 0;
+            $finishReason = null;
+            $isFunctionCall = false;
+
+            do {
+                // Call OpenAI API to get the assistant's response after the function call
+                $this->logger->logServerRequest($this->chatRequest->request);
+
+                if ($dump) {
+                    print_r($this->chatRequest->request);
+                }
+
+                try {
+                    $stream = $api->chat()->createStreamed($this->chatRequest->request);
+                } catch (\Exception $e) {
+                    print_r($this->chatRequest->request);
+                    throw $e;
+                }
+
+                // Evaluate the Stream Response
+                $response = new OpenAiStreamResponse();
+                $lastFlush = 0;
+                $finishReason = null;
+
+                foreach ($stream as $streamChunk) {
+                    $delta = $streamChunk->choices[0]->delta->toArray();
+                    $response->addData($delta);
+                    $this->logger->logStreamOutput($delta["content"] ?? "");
+
+                    if ($streamer !== null) {
+                        if (strlen($response->responseFull["content"]) > $lastFlush + 550) {
+                            $lastFlush = strlen($response->responseFull["content"]);
+                            $streamer(new LackOpenAiResponse($response->responseFull["content"]));
+                        }
+                    }
+
+                    // Check if finish_reason is set
+                    if (isset($streamChunk->choices[0]->finish_reason)) {
+                        $finishReason = $streamChunk->choices[0]->finish_reason;
+                    }
+                }
+
+                $this->logger->logServerResponse($response->responseFull);
+
+                // Append the assistant's content to the complete response
+                $assistantContent = $response->responseFull["content"] ?? '';
+                $completeResponseContent .= $assistantContent;
+
+                // Add the assistant's response to the conversation history
+                if ($assistantContent) {
+                    $this->chatRequest->addAssistantContent($assistantContent);
+                }
+
+                // Check for another function call (unlikely but possible)
+                if ($response->isFunctionCall()) {
+                    $this->logger->logStreamOutput("Nested function calls are not supported.");
+                    break;
+                }
+
+                if ($finishReason === 'length' && $retryCount < $maxRetries) {
+                    // Max token limit reached, instruct the assistant to continue
+                    $this->logger->logStreamOutput("Max token limit reached, requesting continuation.");
+                    $retryCount++;
+
+                    // Instruct the assistant to continue
+                    $continuationInstruction = "Please continue from where you left off.";
+                    $this->chatRequest->addUserContent($continuationInstruction);
+                } else {
+                    // Response is complete or max retries reached
+                    break;
+                }
+
+            } while (true);
         }
 
-        $this->requestCache->set($cacheKey, $response->responseFull["content"]);
+        // Cache the complete response
+        $this->requestCache->set($cacheKey, $completeResponseContent);
+
         if ($streamer !== null) {
-            $streamer(new LackOpenAiResponse($response->responseFull["content"]));
+            $streamer(new LackOpenAiResponse($completeResponseContent));
         }
-        return new LackOpenAiResponse($response->responseFull["content"]);
+
+        return new LackOpenAiResponse($completeResponseContent);
     }
+
 
 
     public function dump() {

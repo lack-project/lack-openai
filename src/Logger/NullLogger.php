@@ -17,12 +17,12 @@ class NullLogger implements LackOpenAiLogger
 
     public function setLogLevel(bool $logFunction = true, bool $logServer = true): void
     {
-       
+
     }
 
     public function logFunctionCall(string $name, array $arguments): void
     {
-       
+
     }
 
     public function logFunctionResult(string $name, mixed $result): void
@@ -31,21 +31,26 @@ class NullLogger implements LackOpenAiLogger
 
     public function logServerRequest(array $request): void
     {
-       
+
     }
 
     public function logServerResponse(array $response): void
     {
-        
+
     }
 
     public function logStreamOutput(string $chars): void
     {
-        
+
     }
 
     public function logCacheHit(string $key = ""): void
     {
-      
+
     }
+
+    public function logEvent(string $message) : void {
+
+    }
+
 }
