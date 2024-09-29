@@ -179,7 +179,6 @@ class LackOpenAiClient
             try {
                 $stream = $api->chat()->createStreamed($this->chatRequest->request);
             } catch (\Exception $e) {
-                print_r($this->chatRequest->request);
                 throw $e;
             }
 
@@ -278,7 +277,6 @@ class LackOpenAiClient
                 try {
                     $stream = $api->chat()->createStreamed($this->chatRequest->request);
                 } catch (\Exception $e) {
-                    print_r($this->chatRequest->request);
                     throw $e;
                 }
 
