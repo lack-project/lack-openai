@@ -58,7 +58,7 @@ class LackOpenAiClient
      * @param string|null $systemContent
      * @return void
      */
-    public function reset(string $systemContent = null, float $temperature = 0.1, string $model = "gpt-4") {
+    public function reset(string $systemContent = null, float $temperature = 0.1, string $model = "gpt-4o") {
         $this->chatRequest->reset($systemContent, $temperature, $model );
     }
 
@@ -158,7 +158,7 @@ class LackOpenAiClient
         if ($question) {
             $this->chatRequest->addUserContent($question);
         }
-        $this->chatRequest->setJson($json, $schema);
+        $this->chatRequest->setJson($json); // Skip schema for now - not supported 2024/10
 
 
         // Initialize variables for continuation logic
@@ -202,7 +202,7 @@ class LackOpenAiClient
                 // Check if finish_reason is set
                 if (isset($streamChunk->choices[0]->finishReason)) {
                     $finishReason = $streamChunk->choices[0]->finishReason;
-                    echo "FinishReason $finishReason";
+
                 }
             }
 

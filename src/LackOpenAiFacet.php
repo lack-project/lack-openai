@@ -32,7 +32,7 @@ class LackOpenAiFacet
      * @return mixed|T
      * @throws \Exception
      */
-    public function promptData(string $templateFile, array $data, string|array $cast = null, bool $dump = false, array $imageDataUrls=null) : mixed {
+    public function promptData(string $templateFile, array $data, string $cast = null, bool $dump = false, array $imageDataUrls=null, array $schema=null) : mixed {
         $tpl = new JobTemplate($templateFile);
         $tpl->setData($data);
 
@@ -48,12 +48,12 @@ class LackOpenAiFacet
             return $result->getTextCleaned();
         }
 
-        $schema = $cast;
+
         if (is_string($cast)) {
             $schema = (new JsonSchemaGenerator())->convertToJsonSchema($cast);
         }
 
-        $system = "You must output parsable json data as defined in the output json_schema: Evaluate and follow the output json_schema descriptions on how to format data!";
+        $system = "You must output parsable json data as defined in the output json_schema: '". json_encode($schema) . "' Evaluate and follow the output json_schema descriptions on how to format data!";
         $this->client->reset($system . "\n\n" . $tpl->getSystemContent(), 0.1, $this->model);
         if ($imageDataUrls !== null) {
             foreach ($imageDataUrls as $imageDataUrl) {

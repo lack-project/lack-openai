@@ -6,7 +6,7 @@ class ChatRequest
 {
 
     public $request = [
-        "model" => "gpt-4",
+        "model" => "gpt-4o",
         "temperature" => 0.1,
         "messages" => []
     ];
@@ -24,7 +24,7 @@ class ChatRequest
      * @param string|null $systemMessage
      * @return void
      */
-    public function reset(string $systemMessage = null, float $temperature = 0.1, string $model = "gpt-4") {
+    public function reset(string $systemMessage = null, float $temperature = 0.1, string $model = "gpt-4o") {
         $this->request["temperature"] = $temperature;
         $this->request["model"] = $model;
         $this->request["messages"] = [];
@@ -86,8 +86,12 @@ class ChatRequest
     }
 
     public function setJson(bool $json, array $schema = null) {
-        if ($json && $schema !== null)
-            $this->request["response_format"] = ["type" => "json_schema", "schema" => $schema];
+        if ($json && $schema !== null )
+            $this->request["response_format"] = ["type" => "json_schema", "json_schema" => [
+                "name"=>"response",
+                "strict"=>true,
+                "schema"=>$schema
+            ]];
         elseif ($json)
             $this->request["response_format"] = ["type" => "json_object"];
         else
