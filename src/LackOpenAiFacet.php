@@ -32,25 +32,36 @@ class LackOpenAiFacet
      * @return mixed|T
      * @throws \Exception
      */
-    public function promptData(string $templateFile, array $data, string $cast = null, bool $dump = false) : mixed {
+    public function promptData(string $templateFile, array $data, string|array $cast = null, bool $dump = false, array $imageDataUrls=null) : mixed {
         $tpl = new JobTemplate($templateFile);
         $tpl->setData($data);
-
-
-
 
         if ($cast === null) {
             // Return string Text
             $this->client->reset($tpl->getSystemContent(), 0.1, $this->model);
-            $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: false);
+            if ($imageDataUrls !== null) {
+                foreach ($imageDataUrls as $imageDataUrl) {
+                    $this->client->getChatRequest()->addImageContent("image", $imageDataUrl);
+                }
+            }
+            $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: false, dump: $dump);
             return $result->getTextCleaned();
         }
 
-        $jsg = new JsonSchemaGenerator();
+        $schema = $cast;
+        if (is_string($cast)) {
+            $schema = (new JsonSchemaGenerator())->convertToJsonSchema($cast);
+        }
 
-        $system = "You must output parsable json data as defined in the json-schema: `" . $jsg->convertToJsonSchema($cast) . "`! Evaluate and follow the json-schema descriptions on how to format data. No additional text is allowed!";
+        $system = "You must output parsable json data as defined in the output json_schema: Evaluate and follow the output json_schema descriptions on how to format data!";
         $this->client->reset($system . "\n\n" . $tpl->getSystemContent(), 0.1, $this->model);
-        $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: false, dump: $dump, json: true);
+        if ($imageDataUrls !== null) {
+            foreach ($imageDataUrls as $imageDataUrl) {
+                $this->client->getChatRequest()->addImageContent("image", $imageDataUrl);
+            }
+        }
+        $result = $this->client->textComplete($tpl->getUserContent(), streamOutput: false, dump: $dump, json: true, schema: $schema);
+
         return phore_json_decode($result->getTextCleaned(), $cast);
     }
 
@@ -63,7 +74,7 @@ class LackOpenAiFacet
         $tpl->setData($data);
 
 
-        $this->client->reset($tpl->getSystemContent(), 0.1, "gpt-4-vision-preview");
+        $this->client->reset($tpl->getSystemContent(), 0.1, "gpt-4o");
 
         $this->client->getChatRequest()->setMaxTokens(4000);
         $this->client->getChatRequest()->addImageContent($tpl->getUserContent(), "data:image/$imageType;base64,". base64_encode($imageData));

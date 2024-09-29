@@ -85,8 +85,10 @@ class ChatRequest
         ];
     }
 
-    public function setJson(bool $json) {
-        if ($json)
+    public function setJson(bool $json, array $schema = null) {
+        if ($json && $schema !== null)
+            $this->request["response_format"] = ["type" => "json_schema", "schema" => $schema];
+        elseif ($json)
             $this->request["response_format"] = ["type" => "json_object"];
         else
             unset ($this->request["response_format"]);

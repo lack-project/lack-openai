@@ -4,7 +4,7 @@ namespace Lack\OpenAi\Helper;
 
 class JsonSchemaGenerator
 {
-    public function convertToJsonSchema(string $classString): string
+    public function convertToJsonSchema(string $classString): array
     {
         $reflectionClass = new \ReflectionClass($classString);
         $properties = $reflectionClass->getProperties();
@@ -27,7 +27,7 @@ class JsonSchemaGenerator
             $schema['properties'][$property->getName()] = $this->parseType($type, $description, $reflectionClass->getNamespaceName());
         }
 
-        return json_encode($schema, JSON_PRETTY_PRINT);
+        return $schema;
     }
 
     private function parseType(string $type, string $description = '', string $namespace = ''): array
@@ -47,7 +47,7 @@ class JsonSchemaGenerator
         } else {
             $fullType = $this->getFullQualifiedClassName($type, $namespace);
             if (class_exists($fullType)) {
-                $schema = json_decode($this->convertToJsonSchema($fullType), true);
+                $schema = $this->convertToJsonSchema($fullType);
             } else {
 
                 $schema['type'] = $this->mapPhpTypeToJsonType($type);

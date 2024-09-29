@@ -35,6 +35,12 @@ class LackOpenAiClient
         return trim($this->apiKey);
     }
 
+
+    public function setLogger( LackOpenAiLogger $logger) {
+        $this->logger = $logger;
+    }
+
+
     /**
      * Load the Facet with nice helper functions
      *
@@ -132,7 +138,7 @@ class LackOpenAiClient
     }
 
 
-    public function textComplete(string|array|null $question = null, bool $streamOutput = false, callable $streamer = null, bool $dump = false, bool $json = false): LackOpenAiResponse
+    public function textComplete(string|array|null $question = null, bool $streamOutput = false, callable $streamer = null, bool $dump = false, bool $json = false, array $schema = null): LackOpenAiResponse
     {
         $api = \OpenAI::client($this->getApiKey());
 
@@ -152,7 +158,8 @@ class LackOpenAiClient
         if ($question) {
             $this->chatRequest->addUserContent($question);
         }
-        $this->chatRequest->setJson($json);
+        $this->chatRequest->setJson($json, $schema);
+
 
         // Initialize variables for continuation logic
         $maxRetries = 2; // Maximum number of continuations
