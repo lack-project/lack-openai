@@ -36,7 +36,7 @@ class LackOpenAiFacet
         $tpl = new JobTemplate($templateFile);
         $tpl->setData($data);
 
-        if ($cast === null) {
+        if ($cast === null && $schema === null) {
             // Return string Text
             $this->client->reset($tpl->getSystemContent(), 0.1, $this->model);
             if ($imageDataUrls !== null) {
