@@ -52,13 +52,16 @@ class JobTemplate
             }
             return ""; // Skip section if not found
         }, $template);
-        
-        
+
+
         // Replace all {{key}} with value from data
         // Allows to use {{ key | htmlentitys }} to apply a filter
         
-        $template =  preg_replace_callback("/\{{([a-zA-Z0-9_| ]+)\}\}/", function ($matches) use($debugSectionName) {
+
+        
+        $template = preg_replace_callback('/\{\{([a-zA-Z0-9_| ]+)\}\}/', function (array $matches) use($debugSectionName) {
             // Split by pipe
+           
             $parts = explode("|", $matches[1]);
             $key = trim (array_shift($parts));
             $value = null;
@@ -69,7 +72,7 @@ class JobTemplate
             } else {
                 throw new \InvalidArgumentException("Key '$key' not found in template. (Section: $debugSectionName in file: {$this->templateFileName})");
             }
-           
+    
             // Filter
             foreach ($parts as $filter) {
                 $filter = trim($filter);
@@ -79,10 +82,13 @@ class JobTemplate
                     throw new \InvalidArgumentException("Unknown filter '$filter' in template. (Section: $debugSectionName in file: {$this->templateFileName})");
                 }
             }
-            
+            if ( ! is_string($value) && ! is_numeric($value))
+                throw new \InvalidArgumentException("Value for key '$key' is not a string. (Section: $debugSectionName in file: {$this->templateFileName})");
             return $value;
-            
+
         }, $template);
+
+   
         return $template;
 
     }
