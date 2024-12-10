@@ -14,7 +14,7 @@ class LackOpenAiFacet
     }
 
 
-    public $model = "gpt-4o";
+    public $model = "gpt-4o-2024-11-20";
 
     public function setModel(string $model) : self {
         $this->model = $model;
