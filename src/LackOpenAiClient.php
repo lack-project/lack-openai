@@ -58,7 +58,7 @@ class LackOpenAiClient
      * @param string|null $systemContent
      * @return void
      */
-    public function reset(string $systemContent = null, float $temperature = 0.1, string $model = "gpt-4o") {
+    public function reset(string $systemContent = null, float $temperature = 0.1, string $model = "gpt-4o-2024-11-20") {
         $this->chatRequest->reset($systemContent, $temperature, $model );
     }
 
